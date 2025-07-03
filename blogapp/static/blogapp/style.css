@@ -1,0 +1,146 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f7f7f7;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    padding: 32px 40px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    margin-top: 80px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 32px;
+}
+
+.post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+}
+
+.post-item {
+    border-bottom: 1px solid #eee;
+    padding: 24px 0;
+    background: #fafbfc;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.post-item:last-child {
+    border-bottom: none;
+}
+
+.post-item h2 {
+    margin: 0 0 10px 0;
+    color: #2a7ae2;
+}
+
+.date, .category {
+    color: #888;
+    font-size: 0.95em;
+    margin-bottom: 8px;
+}
+
+.post-image {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 12px;
+    border-radius: 6px;
+}
+
+.navbar {
+    width: 100%;
+    background: #2a7ae2;
+    padding: 0 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+.navbar-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 56px;
+    padding: 0 40px;
+}
+
+.navbar-left a, .navbar-right a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    margin-right: 24px;
+    font-size: 1.1em;
+    transition: color 0.2s;
+}
+
+.navbar-right a:last-child {
+    margin-right: 0;
+}
+
+.navbar-left a:hover, .navbar-right a:hover {
+    color: #dbeafe;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.3);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal[style*="display: flex"] {
+    display: flex !important;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 24px 32px;
+    border-radius: 10px;
+    max-width: 400px;
+    width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 1.2em;
+    background: none;
+    border: none;
+    cursor: pointer;
+} 

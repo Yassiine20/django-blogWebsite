@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ post.title }}</title>
+    <link rel="stylesheet" href="{% static 'blogapp/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-left">
+                <a href="/api/">Home</a>
+                <a href="{% url 'create_post' %}">Create Post</a>
+            </div>
+            <div class="navbar-right">
+                <a href="{% url 'profile' %}">Profile</a>
+                <a href="{% url 'logout' %}">Logout</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="post-item">
+            <h2>{{ post.title }}</h2>
+            <p class="date">Published: {{ post.publication_date|date:'Y-m-d H:i' }}</p>
+            {% if post.image %}
+                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="post-image" />
+            {% endif %}
+            <p>{{ post.content }}</p>
+            <p class="category">Category: {{ post.category.name }}</p>
+        </div>
+        <div style="margin-top:32px;">
+            <h3>Comments</h3>
+            <ul class="post-list">
+                {% for comment in comments %}
+                    <li class="post-item">
+                        <strong>{{ comment.author }}</strong> <span class="date">{{ comment.created_at|date:'Y-m-d H:i' }}</span>
+                        <p>{{ comment.content }}</p>
+                    </li>
+                {% empty %}
+                    <li>No comments yet.</li>
+                {% endfor %}
+            </ul>
+            <h4>Add a comment</h4>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Post Comment</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html> 
