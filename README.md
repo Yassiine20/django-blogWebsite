@@ -101,7 +101,6 @@ A full-stack personal blogging platform built with Django and Django REST Framew
 ├── blog/
 │   ├── settings.py
 │   ├── urls.py
-│   ├── serializers.py
 │   ├── wsgi.py
 │   ├── asgi.py
 ├── .env.example
