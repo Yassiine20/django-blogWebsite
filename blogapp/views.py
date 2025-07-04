@@ -11,6 +11,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.renderers import TemplateHTMLRenderer
+from django.contrib.auth import login as auth_login
+from django.http import HttpResponse, HttpResponseForbidden
 
 # Blog list (HTML)
 @login_required
@@ -22,48 +27,64 @@ def blog_list(request):
         content = request.POST.get('content')
         if post_id and content:
             post = get_object_or_404(Post, pk=post_id)
-            Comment.objects.create(post=post, author=request.user.username, content=content) #type: ignore
+            Comment.objects.create(post=post, author=request.user.username, content=content) #type: ignore[attr-defined]
             return redirect('blog_list')
     return render(request, 'blogapp/blog_list.html', {'posts': posts, 'comment_form': comment_form})
 
 # Create post (HTML)
-@login_required
-def create_post_view(request):
-    if request.method == 'POST':
+class CreatePostView(CreateAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'blogapp/create_post.html'
+
+    def get(self, request, *args, **kwargs):
+        form = PostForm()
+        return Response({'form': form}, template_name=self.template_name)
+
+    def post(self, request, *args, **kwargs):
         form = PostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
             post.save()
             return redirect('blog_list')
-    else:
-        form = PostForm()
-    return render(request, 'blogapp/create_post.html', {'form': form})
+        return Response({'form': form}, template_name=self.template_name)
 
 # Register (HTML)
-def register_view(request):
-    if request.method == 'POST':
+class RegisterFormView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'blogapp/register.html'
+
+    def get(self, request, *args, **kwargs):
+        form = RegisterForm()
+        return Response({'form': form}, template_name=self.template_name)
+
+    def post(self, request, *args, **kwargs):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
             user.save()
             return redirect('login')
-    else:
-        form = RegisterForm()
-    return render(request, 'blogapp/register.html', {'form': form})
+        return Response({'form': form}, template_name=self.template_name)
 
 # Login (HTML)
-def login_view(request):
-    if request.method == 'POST':
+class LoginFormView(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'blogapp/login.html'
+
+    def get(self, request, *args, **kwargs):
+        form = LoginForm()
+        return Response({'form': form}, template_name=self.template_name)
+
+    def post(self, request, *args, **kwargs):
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
             user = form.get_user()
-            login(request, user)
+            auth_login(request, user)
             return redirect('profile')
-    else:
-        form = LoginForm()
-    return render(request, 'blogapp/login.html', {'form': form})
+        return Response({'form': form}, template_name=self.template_name)
 
 # Logout (HTML)
 def logout_view(request):
@@ -73,36 +94,51 @@ def logout_view(request):
 # Profile (HTML)
 @login_required
 def profile_view(request):
-    return render(request, 'blogapp/profile.html', {'user': request.user})
+    user_posts = Post.objects.filter(user=request.user).order_by('-publication_date')  # type: ignore[attr-defined]
+    return render(request, 'blogapp/profile.html', {'user': request.user, 'user_posts': user_posts})
 
 # Change password (HTML)
-@login_required
-def change_password_view(request):
-    if request.method == 'POST':
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'blogapp/change_password.html'
+
+    def get(self, request, *args, **kwargs):
+        form = PasswordChangeForm(request.user)
+        return Response({'form': form}, template_name=self.template_name)
+
+    def post(self, request, *args, **kwargs):
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
             return redirect('profile')
-    else:
-        form = PasswordChangeForm(request.user)
-    return render(request, 'blogapp/change_password.html', {'form': form})
+        return Response({'form': form}, template_name=self.template_name)
 
 # Post detail (HTML)
-@login_required
-def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
-    comments = post.comments.all().order_by('-created_at')
-    if request.method == 'POST':
+class PostDetailView(RetrieveAPIView):
+    queryset = Post.objects.all() #type: ignore[attr-defined]
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'blogapp/post_detail.html'
+
+    def get(self, request, *args, **kwargs):
+        post = self.get_object()
+        comments = post.comments.all().order_by('-created_at')
+        form = CommentForm()
+        return Response({'post': post, 'comments': comments, 'form': form}, template_name=self.template_name)
+
+    def post(self, request, *args, **kwargs):
+        post = self.get_object()
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
             comment.post = post
             comment.save()
             return redirect('post_detail', pk=post.pk)
-    else:
-        form = CommentForm()
-    return render(request, 'blogapp/post_detail.html', {'post': post, 'comments': comments, 'form': form})
+        comments = post.comments.all().order_by('-created_at')
+        return Response({'post': post, 'comments': comments, 'form': form}, template_name=self.template_name)
 
 # --- API (DRF) ---
 
@@ -130,3 +166,25 @@ class RegisterView(APIView):
             user = serializer.save()
             return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@login_required
+def delete_post(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    if post.user != request.user:
+        return HttpResponseForbidden(b'You are not allowed to delete this post.')
+    post.delete()
+    return redirect('profile')
+
+@login_required
+def update_post(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    if post.user != request.user:
+        return HttpResponseForbidden(b'You are not allowed to edit this post.')
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = PostForm(instance=post)
+    return render(request, 'blogapp/create_post.html', {'form': form, 'update': True, 'post': post})
