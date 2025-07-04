@@ -90,7 +90,7 @@ A full-stack personal blogging platform built with Django and Django REST Framew
 ## 📁 Project Structure
 
 ```
-blogproject/
+   project/
 ├── blogapp/
 │   ├── models.py         # Post, Category, Comment models
 │   ├── views.py          # Web + API views
@@ -98,10 +98,14 @@ blogproject/
 │   ├── serializers.py    # DRF Serializers
 │   ├── templates/        # HTML templates
 │   └── static/           # CSS, images, assets
-├── blogproject/
+├── blog/
 │   ├── settings.py
 │   ├── urls.py
+│   ├── serializers.py
+│   ├── wsgi.py
+│   ├── asgi.py
 ├── .env.example
+├── manage.py
 ├── .gitignore
 ├── requirements.txt
 ```
