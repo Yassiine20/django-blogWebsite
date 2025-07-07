@@ -24,6 +24,23 @@
     </nav>
     <div class="container">
         <h1>Blog Posts</h1>
+        <form method="get" action="" style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
+            <input type="text" name="search" placeholder="Search posts..." value="{{ search_query }}" style="padding: 6px; width: 220px;">
+            {% if selected_category %}
+                <input type="hidden" name="category" value="{{ selected_category }}">
+            {% endif %}
+            <button type="submit">Search</button>
+        </form>
+        <form method="get" action="" style="margin-bottom: 20px;">
+            <label for="category">Filter by category:</label>
+            <select name="category" id="category" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id|stringformat:'s' == selected_category %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            <noscript><button type="submit">Filter</button></noscript>
+        </form>
         {% if posts %}
             <ul class="post-list">
                 {% for post in posts %}
@@ -37,7 +54,13 @@
                         {% endif %}
                         <p>{{ post.content|truncatewords:40 }}</p>
                         <p class="category">Category: {{ post.category.name }}</p>
-                        
+                        <form method="post" action="{% url 'like_post' post.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none;border:none;color:#007bff;cursor:pointer;">
+                                {% if user in post.likes.all %}♥ Liked{% else %}♡ Like{% endif %}
+                            </button>
+                            <span>({{ post.likes.count }})</span>
+                        </form>
                         <button type="button" onclick="openModal('{{ post.pk }}')" style="margin-top:12px;">Comments</button>
 
                         <!-- Modal -->
@@ -63,6 +86,15 @@
                     </li>
                 {% endfor %}
             </ul>
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                {% endif %}
+            </div>
         {% else %}
             <p>No blog posts available.</p>
         {% endif %}

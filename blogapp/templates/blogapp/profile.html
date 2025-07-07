@@ -42,6 +42,13 @@
                         {% endif %}
                         <p>{{ post.content|truncatewords:40 }}</p>
                         <p class="category">Category: {{ post.category.name }}</p>
+                        <form method="post" action="{% url 'like_post' post.pk %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none;border:none;color:#007bff;cursor:pointer;">
+                                {% if user in post.likes.all %}♥ Liked{% else %}♡ Like{% endif %}
+                            </button>
+                            <span>({{ post.likes.count }})</span>
+                        </form>
                         <button type="button" onclick="openModal('profile-{{ post.pk }}')" style="margin-top:12px;">Comments</button>
                         <!-- Modal -->
                         <div id="modal-profile-{{ post.pk }}" class="modal">
