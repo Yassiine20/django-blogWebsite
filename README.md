@@ -1,4 +1,3 @@
-Readme branch2 branch1
 # 📰 Personal Blog Website (Django + DRF)
 
 A full-stack personal blogging platform built with Django and Django REST Framework. Users can register, log in, create blog posts with images, comment on posts, and interact via a secure and RESTful API.
