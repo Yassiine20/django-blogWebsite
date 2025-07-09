@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import (TokenObtainPairView,
                                             TokenRefreshView)
 
-from .views import (CategoryViewSet, ChangePasswordView, CommentViewSet,
+from .views import (BlogsPaginatedView, CategoryViewSet, ChangePasswordView, CommentViewSet,
                     CreatePostView, LoginFormView, PostDetailView, PostViewSet,
                     RegisterFormView, RegisterView, blog_list, delete_post,
                     like_post, logout_view, profile_view, root_redirect,
@@ -30,6 +30,7 @@ urlpatterns = [
     path("delete-post/<int:pk>/", delete_post, name="delete_post"),
     path("update-post/<int:pk>/", update_post, name="update_post"),
     path("like-post/<int:pk>/", like_post, name="like_post"),
+    path("get-blogs-paginated/", BlogsPaginatedView.as_view(), name="get_blogs_paginated"),
 ]
 
 urlpatterns += router.urls
